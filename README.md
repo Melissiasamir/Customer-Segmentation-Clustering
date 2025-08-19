@@ -1,24 +1,45 @@
-# Customer Segmentation Clustering
+# 📊 Customer Segmentation using Clustering  
 
-## Project Overview
+This project applies **unsupervised machine learning techniques** to group customers into meaningful segments.  
+By analyzing customer behavior and demographics, businesses can better understand their audience and apply **targeted marketing strategies**.  
 
-This project focuses on **Customer Segmentation using K-Means Clustering**. The goal is to analyze transactional data from a retail dataset, extract key features, and group customers into distinct segments based on their purchasing behavior.  
+---
 
-Key aspects of the project:  
-- **RFM Analysis**: Features such as Recency (days since last purchase), Frequency (number of purchases), and Monetary (total spend) are extracted to represent customer behavior.  
-- **Data Cleaning & Preprocessing**: Handles missing values, outliers, duplicates, and rare countries.  
-- **Feature Engineering**: One-hot encoding for categorical features like Country.  
-- **Scaling**: MinMaxScaler is applied to normalize the features for K-Means.  
-- **Optimal Clusters**: The Elbow method with KneeLocator is used to determine the best number of clusters.  
-- **K-Means Clustering**: Groups customers into distinct clusters, allowing businesses to understand different customer segments.  
-- **Streamlit App**: A user-friendly interface to input customer information (RFM + Country) and predict the cluster of a customer.  
+## 🚀 Features  
+✔️ **Data Preprocessing** – handling missing values, encoding categorical features, and scaling numerical data.  
+✔️ **Clustering Algorithms** – implemented **K-Means** and **Gaussian Mixture Model (GMM)** for segmentation.  
+✔️ **Model Evaluation** – using **Silhouette Score** and **visualizations** to assess clustering quality.  
+✔️ **Interactive Streamlit App** – intuitive UI to:  
+   - Select **country** and other features.  
+   - Visualize customer clusters.  
+   - Display model insights in real-time.  
 
-This project helps businesses target marketing strategies and personalize customer interactions based on segment behavior.
+---
 
-## How to Run
+## 🧩 Implemented Models  
+- **K-Means Clustering** – partitions customers into k clusters based on similarity.  
+- **Gaussian Mixture Model (GMM)** – probabilistic clustering that allows soft assignments.  
 
-1. Clone the repository:  
+---
+
+## 📈 Visualizations  
+- **Cluster Scatter Plots** – income vs spending score, colored by cluster.  
+- **Distribution Graphs** – show data distribution for better understanding.  
+- **Model Comparisons** – visualize differences between K-Means and GMM results.  
+
+---
+
+## 🛠️ Tech Stack  
+- **Programming**: Python 🐍  
+- **Libraries**: Pandas, NumPy, Scikit-learn, Seaborn, Matplotlib  
+- **Deployment**: Streamlit  
+- **Version Control**: Git & GitHub  
+
+---
+
+## ⚡ How to Run  
+
+1️⃣ Clone the repository:  
 ```bash
-git clone https://github.com/your-username/Customer-Segmentation-Clustering.git
-﻿# Customer-Segmentation-Clustering
-
+git clone https://github.com/Melissiasamir/Customer-Segmentation-Clustering.git
+cd Customer-Segmentation-Clustering
