@@ -1,75 +1,71 @@
 import streamlit as st
 import pandas as pd
 import joblib
-import os
 
-# ====== Load Model and Scaler ======
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_DIR = os.path.join(BASE_DIR, "Model")
+# Load models & scaler & feature names
+kmeans = joblib.load("models/kmeans_model.pkl")
+gmm = joblib.load("models/gmm_model.pkl")
+scaler = joblib.load("models/scaler.pkl")
+feature_names = joblib.load("models/feature_names.pkl")
 
-try:
-    kmeans = joblib.load(os.path.join(MODEL_DIR, "kmeans_model.pkl"))
-    scaler = joblib.load(os.path.join(MODEL_DIR, "scaler.pkl"))
-    st.success("Model and scaler loaded successfully!")
-except Exception as e:
-    st.error(f"Error loading model/scaler: {e}")
-    st.stop()
+# Extract country list from feature names
+countries = [col.replace("Country_", "") for col in feature_names if col.startswith("Country_")]
 
-# ====== Streamlit Page Config ======
-st.set_page_config(page_title="Customer Segmentation", page_icon="🧩", layout="wide")
-st.title("🧩 Customer Segmentation App")
+# Page config
+st.set_page_config(page_title="Customer Segmentation", page_icon="🛒", layout="centered")
 
-# ====== Tabs ======
-tab1, tab2 = st.tabs(["📥 Data Input", "📊 Prediction Result"])
+# Title
+st.markdown(
+    """
+    <h1 style='text-align: center; color: #2E86C1;'>🛍️ Customer Segmentation App</h1>
+    <p style='text-align: center; color: gray;'>Predict customer clusters using <b>KMeans</b> & <b>GMM</b></p>
+    """,
+    unsafe_allow_html=True,
+)
 
-# ====== Input Tab ======
-with tab1:
-    st.subheader("Enter Customer RFM and Country Info")
+st.write("---")
 
-    col1, col2 = st.columns(2)
+# User inputs with columns
+col1, col2 = st.columns(2)
+with col1:
+    recency = st.number_input("📅 Recency (days since last purchase)", min_value=0, step=1)
+    monetary = st.number_input("💰 Monetary (total spend)", min_value=0.0, step=10.0)
+with col2:
+    frequency = st.number_input("🔁 Frequency (number of purchases)", min_value=0, step=1)
+    country = st.selectbox("🌍 Country", options=sorted(countries))
 
-    with col1:
-        Recency = st.number_input("Recency (days since last purchase)", min_value=0, value=30)
-        Frequency = st.number_input("Frequency (number of purchases)", min_value=1, value=5)
+st.write("---")
 
-    with col2:
-        Monetary = st.number_input("Monetary (total spend)", min_value=0.0, value=500.0)
-        Country_Encoded = st.selectbox(
-            "Country", 
-            ['Australia','Austria','Belgium','Canada','Channel Islands','Cyprus',
-             'France','Germany','Ireland','Italy','Netherlands','Spain','Sweden',
-             'Switzerland','UK','Unspecified']
-        )
+# Prediction button
+if st.button("🚀 Predict Cluster", use_container_width=True):
+    # Create DataFrame for user input
+    user_df = pd.DataFrame([[recency, frequency, monetary, country]],
+                           columns=["Recency", "Frequency", "Monetary", "Country"])
+    
+    # One-hot encode country
+    user_encoded = pd.get_dummies(user_df, columns=["Country"])
 
-    if st.button("✅ Predict Cluster"):
-        # ====== Prepare input dictionary ======
-        input_dict = {
-            "Recency": [float(Recency)],
-            "Frequency": [float(Frequency)],
-            "Monetary": [float(Monetary)]
-        }
+    # Reindex to match training feature names
+    user_encoded = user_encoded.reindex(columns=feature_names, fill_value=0)
 
-        # Add all country columns based on scaler.feature_names_in_
-        # This ensures the input has EXACTLY the same columns as during training
-        for col in scaler.feature_names_in_[3:]:  # skip Recency, Frequency, Monetary
-            input_dict[col] = [1 if col == f"Country_{Country_Encoded}" else 0]
+    # Scale input
+    user_scaled = scaler.transform(user_encoded)
 
-        input_df = pd.DataFrame(input_dict)
+    # Predictions
+    km_cluster = kmeans.predict(user_scaled)[0]
+    gmm_cluster = gmm.predict(user_scaled)[0]
 
-        # Ensure column order matches scaler
-        input_df = input_df[scaler.feature_names_in_]
+    # Show results nicely with bigger text
+    st.markdown("### 🎯 Prediction Results")
 
-        # ====== Scale and Predict ======
-        X_scaled = scaler.transform(input_df)
-        cluster = kmeans.predict(X_scaled)[0]
+    st.markdown(
+        f"""
+        <div style='text-align:center; margin-top:20px;'>
+            <h2 style='color:#1F618D;'>🔹 KMeans Cluster: <b>{km_cluster}</b></h2>
+            <h2 style='color:#117864;'>🔸 GMM Cluster: <b>{gmm_cluster}</b></h2>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
-        st.session_state["cluster"] = cluster
-        st.success("Prediction complete! Check the 'Prediction Result' tab.")
-
-# ====== Result Tab ======
-with tab2:
-    st.subheader("Cluster Result")
-    if "cluster" in st.session_state:
-        st.info(f"Customer belongs to Cluster: {st.session_state['cluster']}")
-    else:
-        st.info("Please enter data in the 'Data Input' tab and click Predict.")
+    st.success("✅ Prediction completed successfully!")
